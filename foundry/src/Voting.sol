@@ -1,5 +1,3 @@
-pragma solidity ^0.8.14;
-import "@openzeppelin/contracts/access/Ownable.sol";
 contract Voting is Ownable
 {
     enum Stage{vote,result}
@@ -8,22 +6,33 @@ contract Voting is Ownable
     {
         string name;
     }
+    mapping (bytes32=>string) hashtoname;
+    function returnHash(string memory name) public returns (bytes32)
+    {
+        hashtoname[keccak256(bytes(name))]=name;
+        return keccak256(bytes(name));
+    }
     mapping (uint => uint) noofVotes;
+    mapping(string => uint )nametoid;
     Candidate [] candidates;
     constructor()
     {
         //list of predefined candidates as mentioned in the problem statement
         candidates.push(Candidate("mark"));
+        nametoid["mark"]=1;
         candidates.push(Candidate("john"));
+        nametoid["john"]=2;
         candidates.push(Candidate("dev"));
+        nametoid["dev"]=3;
         candidates.push(Candidate("sundar"));
+        nametoid["sundar"]=4;
     }
     mapping (address => bool) public addvoted;
-    function vote(uint _candidateId) public {
+    function vote(bytes32 candi) public {
         require(stage==Stage.vote,"The Voting Process has been Completed");
         require(addvoted[msg.sender]==false,"Voter can vote only once");
         addvoted[msg.sender]=true;
-        noofVotes[_candidateId]++;
+        noofVotes[nametoid[hashtoname[candi]]]++;
     }
     function getVoteCount(uint _candidateId) view internal  returns(uint) 
     {
